@@ -1,0 +1,51 @@
+name: Odyssey Showtime Monitor
+
+on:
+  schedule:
+    # Every 5 minutes. NOTE: GitHub cron is best-effort and can lag 5-15 min
+    # during busy periods. For sub-5-min checks, run on your own machine.
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: write # needed to commit updated state.json back to the repo
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor
+        env:
+          MOVIE_URL: ${{ vars.MOVIE_URL || 'https://www.cineplex.com/movie/the-odyssey-the-imax-experience-in-70mm-film' }}
+          FILM_ID: ${{ vars.FILM_ID || '38376' }}
+          LOCATION_KEYWORD: ${{ vars.LOCATION_KEYWORD || 'Langley' }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python monitor.py
+
+      - name: Commit updated state
+        run: |
+          if [[ -n "$(git status --porcelain state.json)" ]]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state.json
+            git commit -m "chore: update monitor state [skip ci]"
+            git push
+          else
+            echo "No state changes."
+          fi
