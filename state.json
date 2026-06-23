@@ -1,6 +1,6 @@
 {
-  "fingerprint": "4861b97fa5a2081c107baa885eff01513a4d4ce652d3732b036d004047ba8d4a",
-  "last_check": "2026-06-23T22:39:20.316922+00:00",
+  "fingerprint": "9559192d18e5a067727e1d2bfb41c60b16e64ce725889347f6cc350b020a9272",
+  "last_check": "2026-06-23T23:41:28.651625+00:00",
   "last_keyword_found": true,
   "showtimes": [
     "Fri Jul 17 @ 10:00 PM",
@@ -35,12 +35,20 @@
     "Thu Jul 16 @ 3:30 PM",
     "Thu Jul 16 @ 6:30 PM",
     "Thu Jul 16 @ 7:30 PM",
+    "Thu Jul 23 @ 10:45 PM",
+    "Thu Jul 23 @ 11:00 AM",
+    "Thu Jul 23 @ 2:45 PM",
+    "Thu Jul 23 @ 6:45 PM",
     "Tue Jul 21 @ 10:00 PM",
     "Tue Jul 21 @ 11:00 AM",
     "Tue Jul 21 @ 11:00 PM",
     "Tue Jul 21 @ 2:00 PM",
     "Tue Jul 21 @ 3:00 PM",
     "Tue Jul 21 @ 6:00 PM",
-    "Tue Jul 21 @ 7:00 PM"
+    "Tue Jul 21 @ 7:00 PM",
+    "Wed Jul 22 @ 10:45 PM",
+    "Wed Jul 22 @ 11:00 AM",
+    "Wed Jul 22 @ 2:45 PM",
+    "Wed Jul 22 @ 6:45 PM"
   ]
 }
