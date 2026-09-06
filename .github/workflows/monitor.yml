@@ -88,3 +88,44 @@ jobs:
           else
             echo "No state changes."
           fi
+
+  avengers-landmark:
+    runs-on: ubuntu-latest
+    needs: dune3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pull latest
+        run: git pull --rebase origin main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor — Avengers Doomsday Infinity Vision (Landmark NW)
+        env:
+          LANDMARK_FILM_ID: "125801"
+          LANDMARK_CINEMA_ID: "214"
+          LANDMARK_CINEMA_NAME: "New Westminster"
+          LANDMARK_FILM_URL: "/film-info/avengers-doomsday"
+          STATE_FILE: "state_avengers_landmark.json"
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python monitor_landmark.py
+
+      - name: Commit updated state
+        run: |
+          if [[ -n "$(git status --porcelain state_avengers_landmark.json)" ]]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state_avengers_landmark.json
+            git commit -m "chore: update avengers landmark state [skip ci]"
+            git push
+          else
+            echo "No state changes."
+          fi
