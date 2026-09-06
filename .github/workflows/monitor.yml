@@ -13,51 +13,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  odyssey:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run monitor — Odyssey 70mm
-        env:
-          MOVIE_URL: "https://www.cineplex.com/movie/the-odyssey-the-imax-experience-in-70mm-film"
-          FILM_ID: "38376"
-          LOCATION_KEYWORD: "Langley"
-          STATE_FILE: "state_odyssey.json"
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python monitor.py
-
-      - name: Commit updated state
-        run: |
-          if [[ -n "$(git status --porcelain state_odyssey.json)" ]]; then
-            git config user.name  "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add state_odyssey.json
-            git commit -m "chore: update odyssey state [skip ci]"
-            git push
-          else
-            echo "No state changes."
-          fi
-
   dune3:
     runs-on: ubuntu-latest
-    needs: odyssey
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Pull latest
-        run: git pull --rebase origin main
 
       - name: Setup Python
         uses: actions/setup-python@v5
