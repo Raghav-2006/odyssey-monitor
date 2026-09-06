@@ -66,15 +66,16 @@ def fetch_showtimes_api(film_id: str) -> list[dict]:
     return resp.json()
 
 
-def extract_showtimes(api_data: list[dict], keyword: str) -> tuple[set[str], str]:
+def extract_showtimes(api_data: list[dict], keyword: str) -> tuple[set[str], str, str]:
     """
     Filter API response to the theatre matching `keyword` and extract
     showtime strings like 'Wed Jul 16 @ 2:00 PM'.
 
-    Returns (set_of_showtime_strings, theatre_name_or_empty).
+    Returns (set_of_showtime_strings, theatre_name_or_empty, movie_name_or_empty).
     """
     showtimes: set[str] = set()
     matched_theatre = ""
+    movie_name = ""
 
     for theatre in api_data:
         name = theatre.get("theatre", "")
@@ -83,6 +84,8 @@ def extract_showtimes(api_data: list[dict], keyword: str) -> tuple[set[str], str
         matched_theatre = name
         for date_entry in theatre.get("dates", []):
             for movie in date_entry.get("movies", []):
+                if not movie_name:
+                    movie_name = movie.get("name", "")
                 for exp in movie.get("experiences", []):
                     for session in exp.get("sessions", []):
                         raw = session.get("showStartDateTime", "")
@@ -95,7 +98,7 @@ def extract_showtimes(api_data: list[dict], keyword: str) -> tuple[set[str], str
                         except ValueError:
                             showtimes.add(raw)
 
-    return showtimes, matched_theatre
+    return showtimes, matched_theatre, movie_name
 
 
 def fingerprint_data(api_data: list[dict], keyword: str) -> str:
@@ -150,7 +153,7 @@ def main() -> int:
         print(f"[!] API fetch failed: {e}", file=sys.stderr)
         return 1
 
-    current_times, theatre_name = extract_showtimes(api_data, LOCATION_KEYWORD)
+    current_times, theatre_name, movie_name = extract_showtimes(api_data, LOCATION_KEYWORD)
     keyword_found = bool(theatre_name)
     current_hash = fingerprint_data(api_data, LOCATION_KEYWORD) if keyword_found else ""
 
@@ -173,7 +176,7 @@ def main() -> int:
 
     if new_times:
         lines = [
-            "🎬 **NEW Odyssey 70mm showtimes detected!**",
+            f"🎬 **NEW {movie_name or 'movie'} showtimes detected!**",
             f"Theatre: **{theatre_name or LOCATION_KEYWORD}**",
             "",
             f"**{len(new_times)} new showtime(s):**",

@@ -1,21 +1,19 @@
-name: Odyssey Showtime Monitor
+name: Showtime Monitor
 
 on:
   schedule:
-    # Every 5 minutes. NOTE: GitHub cron is best-effort and can lag 5-15 min
-    # during busy periods. For sub-5-min checks, run on your own machine.
     - cron: "*/5 * * * *"
-  workflow_dispatch: # allow manual runs from the Actions tab
+  workflow_dispatch:
 
 permissions:
-  contents: write # needed to commit updated state.json back to the repo
+  contents: write
 
 concurrency:
   group: monitor
   cancel-in-progress: false
 
 jobs:
-  check:
+  odyssey:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,21 +28,62 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run monitor
+      - name: Run monitor — Odyssey 70mm
         env:
-          MOVIE_URL: ${{ vars.MOVIE_URL || 'https://www.cineplex.com/movie/the-odyssey-the-imax-experience-in-70mm-film' }}
-          FILM_ID: ${{ vars.FILM_ID || '38376' }}
-          LOCATION_KEYWORD: ${{ vars.LOCATION_KEYWORD || 'Langley' }}
+          MOVIE_URL: "https://www.cineplex.com/movie/the-odyssey-the-imax-experience-in-70mm-film"
+          FILM_ID: "38376"
+          LOCATION_KEYWORD: "Langley"
+          STATE_FILE: "state_odyssey.json"
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python monitor.py
 
       - name: Commit updated state
         run: |
-          if [[ -n "$(git status --porcelain state.json)" ]]; then
+          if [[ -n "$(git status --porcelain state_odyssey.json)" ]]; then
             git config user.name  "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add state.json
-            git commit -m "chore: update monitor state [skip ci]"
+            git add state_odyssey.json
+            git commit -m "chore: update odyssey state [skip ci]"
+            git push
+          else
+            echo "No state changes."
+          fi
+
+  dune3:
+    runs-on: ubuntu-latest
+    needs: odyssey
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pull latest
+        run: git pull --rebase origin main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run monitor — Dune 3 IMAX 70mm
+        env:
+          MOVIE_URL: "https://www.cineplex.com/Movie/imax70-dune-part-3-the-imax-experience-in-70mm"
+          FILM_ID: "61104"
+          LOCATION_KEYWORD: "Langley"
+          STATE_FILE: "state_dune3.json"
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python monitor.py
+
+      - name: Commit updated state
+        run: |
+          if [[ -n "$(git status --porcelain state_dune3.json)" ]]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state_dune3.json
+            git commit -m "chore: update dune3 state [skip ci]"
             git push
           else
             echo "No state changes."
